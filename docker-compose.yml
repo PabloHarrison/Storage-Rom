@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: rom_storege_postgres
+    environment:
+      POSTGRES_DB: rom_storege_db
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - rom_storege_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  rom_storege_pgdata:
