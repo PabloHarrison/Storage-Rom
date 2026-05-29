@@ -5,8 +5,8 @@ import com.pabloharrison.RomStorage.dto.RomPatchDTO;
 import com.pabloharrison.RomStorage.dto.RomPostDTO;
 import com.pabloharrison.RomStorage.dto.RomResponseDTO;
 import com.pabloharrison.RomStorage.service.RomService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,6 +36,11 @@ public class RomController {
     @GetMapping("{id}")
     public ResponseEntity<RomResponseDTO> findRom(@PathVariable("id") String id){
         RomResponseDTO responseDTO = romService.findRomById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+    }
+    @GetMapping
+    public ResponseEntity<List<RomResponseDTO>> findAllRoms(){
+        List<RomResponseDTO> responseDTO = romService.findAllRoms();
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
     @DeleteMapping("{id}")

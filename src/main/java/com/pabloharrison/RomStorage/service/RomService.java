@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -52,6 +53,9 @@ public class RomService {
     public RomResponseDTO findRomById(String id){
         Rom rom = findByID(id);
         return romMapper.toDTO(rom);
+    }
+    public List<RomResponseDTO> findAllRoms(){
+        return romRepository.findAll().stream().map(romMapper::toDTO).toList();
     }
     public void deleteRom(String id) throws IOException{
         Rom rom = findByID(id);
