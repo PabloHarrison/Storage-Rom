@@ -1,5 +1,6 @@
 package com.pabloharrison.RomStorage.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pabloharrison.RomStorage.dto.RomPatchDTO;
 import com.pabloharrison.RomStorage.dto.RomPostDTO;
 import com.pabloharrison.RomStorage.dto.RomResponseDTO;
@@ -7,8 +8,12 @@ import com.pabloharrison.RomStorage.service.RomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,10 +21,15 @@ import org.springframework.web.bind.annotation.*;
 public class RomController {
 
     private final RomService romService;
+    private final ObjectMapper objectMapper;
 
-    @PostMapping
-    public ResponseEntity<RomResponseDTO> romSave(@Valid @RequestBody RomPostDTO dto){
-        RomResponseDTO responseDTO = romService.saveRom(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RomResponseDTO> romSave(
+            @RequestPart("data") String data,
+            @RequestPart("file") MultipartFile file) throws IOException {
+        RomPostDTO dto = objectMapper.readValue(data, RomPostDTO.class);
+
+        RomResponseDTO responseDTO = romService.saveRom(dto, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("{id}")
@@ -28,7 +38,7 @@ public class RomController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
     @DeleteMapping("{id}")
-    public ResponseEntity<RomResponseDTO> deleteRom(@PathVariable("id") String id){
+    public ResponseEntity<RomResponseDTO> deleteRom(@PathVariable("id") String id) throws IOException {
         romService.deleteRom(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

@@ -9,7 +9,10 @@ import com.pabloharrison.RomStorage.mapper.RomMapper;
 import com.pabloharrison.RomStorage.repository.RomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @Service
@@ -18,11 +21,29 @@ public class RomService {
 
     public final RomMapper romMapper;
     public final RomRepository romRepository;
+    public final GoogleDriveService googleDriveService;
 
-    public RomResponseDTO saveRom(RomPostDTO dto){
-        Rom rom = romMapper.toEntity(dto);
-        romRepository.save(rom);
-        return romMapper.toDTO(rom);
+    @Transactional
+    public RomResponseDTO saveRom(RomPostDTO dto, MultipartFile file) throws IOException {
+        String storageKey = null;
+        try {
+            String fileName = file.getOriginalFilename();
+            Long sizeBytes = file.getSize();
+            storageKey = googleDriveService.uploadFile(file);
+
+            Rom rom = romMapper.toEntity(dto);
+            rom.setFileName(fileName);
+            rom.setSizeBytes(sizeBytes);
+            rom.setStorageKey(storageKey);
+            Rom romSaved = romRepository.save(rom);
+            return romMapper.toDTO(romSaved);
+        }
+        catch (Exception e){
+            if (storageKey != null) {
+                googleDriveService.deleteFile(storageKey);
+            }
+            throw e;
+        }
     }
     public Rom findByID(String id){
         UUID idRom = UUID.fromString(id);
@@ -32,8 +53,9 @@ public class RomService {
         Rom rom = findByID(id);
         return romMapper.toDTO(rom);
     }
-    public void deleteRom(String id){
+    public void deleteRom(String id) throws IOException{
         Rom rom = findByID(id);
+        googleDriveService.deleteFile(rom.getStorageKey());
         romRepository.delete(rom);
     }
     public RomResponseDTO updateRom(String id, RomPatchDTO dto){

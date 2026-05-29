@@ -12,3 +12,7 @@ spring:
       ddl-auto: validate
     show-sql: true
     open-in-view: false
+google:
+  drive:
+    folder-id: ${FOLDER_ID}
+    credentials-path: ${GOOGLE_CREDENTIALS_PATH}
