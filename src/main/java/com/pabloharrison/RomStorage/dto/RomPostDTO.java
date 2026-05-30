@@ -9,5 +9,6 @@ public record RomPostDTO(
         @NotBlank(message = "It must not be blank.") String storageKey,
         @NotNull(message = "It must not be null.") Long sizeBytes,
         String platform,
-        String coverUrl) {
+        String coverUrl,
+        String checksum) {
 }

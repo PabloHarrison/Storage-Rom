@@ -1,5 +1,6 @@
 package com.pabloharrison.RomStorage.service;
 
+import com.google.api.services.drive.Drive;
 import com.pabloharrison.RomStorage.dto.RomPatchDTO;
 import com.pabloharrison.RomStorage.dto.RomPostDTO;
 import com.pabloharrison.RomStorage.dto.RomResponseDTO;
@@ -13,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,20 +26,25 @@ public class RomService {
     public final RomMapper romMapper;
     public final RomRepository romRepository;
     public final GoogleDriveService googleDriveService;
+    public final ChecksumService checksumService;
+    private final Drive drive;
 
     @Transactional
-    public RomResponseDTO saveRom(RomPostDTO dto, MultipartFile file) throws IOException {
+    public RomResponseDTO saveRom(RomPostDTO dto, MultipartFile file) throws IOException, NoSuchAlgorithmException {
         String storageKey = null;
         try {
             String fileName = file.getOriginalFilename();
             Long sizeBytes = file.getSize();
+            String checksum = checksumService.calculateSha256(file.getInputStream());
             storageKey = googleDriveService.uploadFile(file);
 
             Rom rom = romMapper.toEntity(dto);
             rom.setFileName(fileName);
             rom.setSizeBytes(sizeBytes);
             rom.setStorageKey(storageKey);
-            Rom romSaved = romRepository.save(rom);
+            rom.setChecksum(checksum);
+            Rom romSaved = romRepository.saveAndFlush(rom);
+            System.out.println(romSaved.getCreatedAt());
             return romMapper.toDTO(romSaved);
         }
         catch (Exception e){
@@ -67,5 +75,16 @@ public class RomService {
         romMapper.updateEntity(dto, rom);
         romRepository.save(rom);
         return romMapper.toDTO(rom);
+    }
+
+    public boolean verifyChecksum(String id) throws IOException, NoSuchAlgorithmException {
+        Rom rom = findByID(id);
+        try (InputStream inputStreamDrive = drive
+                .files()
+                .get(rom.getStorageKey())
+                .executeMediaAsInputStream()) {
+            String checksumDrive = checksumService.calculateSha256(inputStreamDrive);
+            return checksumDrive.equals(rom.getChecksum());
+        }
     }
 }

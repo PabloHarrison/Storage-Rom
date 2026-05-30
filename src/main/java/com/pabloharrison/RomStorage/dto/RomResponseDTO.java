@@ -1,5 +1,6 @@
 package com.pabloharrison.RomStorage.dto;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record RomResponseDTO(
@@ -10,5 +11,6 @@ public record RomResponseDTO(
         Long sizeBytes,
         String platform,
         String coverUrl,
-        String createdAt) {
+        String checksum,
+        LocalDateTime createdAt) {
 }

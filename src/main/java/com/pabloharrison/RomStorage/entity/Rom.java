@@ -28,6 +28,7 @@ public class Rom {
     private String platform;
     @Column(name = "cover_url")
     private String coverUrl;
+    private String checksum;
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -5,10 +5,13 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 
 @Service
@@ -33,8 +36,11 @@ public class GoogleDriveService {
 
         return file.getId();
     }
-
     public void deleteFile(String fileId) throws IOException{
         drive.files().delete(fileId).execute();
+    }
+    public Resource downloadFile(String fileId) throws IOException{
+        InputStream inputStream = drive.files().get(fileId).executeMediaAsInputStream();
+        return new InputStreamResource(inputStream);
     }
 }

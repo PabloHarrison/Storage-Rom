@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -31,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST).hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE).hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH).hasRole("ADMIN")
+                        .requestMatchers("/roms/verify/{id}").hasRole("ADMIN")
                         .anyRequest().permitAll())
                 .addFilterBefore(
                         new FilterSecurity(adminApiKey),
